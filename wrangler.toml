@@ -1,0 +1,8 @@
+name = "tablecheck"
+type = "webpack"
+account_id = "f95bab6d48c4391f625294fab89badeb"
+workers_dev = true
+route = ""
+zone_id = ""
+webpack_config = "webpack.config.js"
+usage_model = ""
