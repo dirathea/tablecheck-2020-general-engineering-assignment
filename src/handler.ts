@@ -1,10 +1,36 @@
-const LINKS_PATH = "/links"
-
-type links = {
-  name: String,
-  url: String,
+/**
+ * defines basic object type for links, contains name and url
+ */
+interface links {
+  name: string,
+  url: string,
 }
 
+/**
+ * defines link for social URLs
+ */
+interface socialLink extends links {
+  svg: string,
+  svgText?: string,
+}
+
+const LINKS_PATH = "/links"
+const STATIC_HTML_SOURCE_URL = "https://static-links-page.signalnerve.workers.dev"
+const LINK_SELECTOR = "div#links";
+const PROFILE_SELECTOR = "div#profile";
+const AVATAR_SELECTOR = "img#avatar";
+const AVATAR_URL = "https://avatars.githubusercontent.com/u/1830284?s=60&v=4";
+const PROFILE_NAME_SELECTOR = "h1#name";
+const PROFILE_NAME = "dirathea";
+const SOCIAL_SELECTOR = "div#social";
+const TITLE_SELECTOR = "title";
+const TITLE = "dirathea - tablecheck assignment";
+const BODY_SELECTOR = "body";
+const BODY_BG_CLASS = "bg-indigo-900"
+
+/**
+ * Contains all the json content that returned on `/links` and also used for replacing HTML url
+ */
 const LINKS_CONTENT: links[] = [
   {
     name: "tablecheck",
@@ -20,13 +46,9 @@ const LINKS_CONTENT: links[] = [
   }
 ]
 
-type socialLink = {
-  name: string,
-  url: string,
-  svg: string,
-  svgText?: string,
-}
-
+/**
+ * Contains
+ */
 const SOCIAL_LINKS: socialLink[] = [
   {
     name: "github",
@@ -40,19 +62,6 @@ const SOCIAL_LINKS: socialLink[] = [
   }
 ]
 
-const STATIC_HTML_SOURCE_URL = "https://static-links-page.signalnerve.workers.dev"
-const LINK_SELECTOR = "div#links";
-const PROFILE_SELECTOR = "div#profile";
-const AVATAR_SELECTOR = "img#avatar";
-const AVATAR_URL = "https://avatars.githubusercontent.com/u/1830284?s=60&v=4";
-const PROFILE_NAME_SELECTOR = "h1#name";
-const PROFILE_NAME = "dirathea";
-const SOCIAL_SELECTOR = "div#social";
-const TITLE_SELECTOR = "title";
-const TITLE = "dirathea - tablecheck assignment";
-const BODY_SELECTOR = "body";
-const BODY_BG_CLASS = "bg-indigo-900"
-
 class LinksTransformer {
   links: links[];
 
@@ -61,7 +70,6 @@ class LinksTransformer {
   }
 
   async element(element: Element) {
-    // Your code
     const content = this.links.map(l => (`<a href="${l.url}">${l.name}</a>`)).join("\n");
     element.setInnerContent(content, { html: true });
   }
@@ -105,13 +113,18 @@ class SocialTransformer {
   }
 
   async element(element: Element) {
-    const fetchedLinksPromise = await this.links.map(async l => {
+    // In this section, we fetch the svg content and store the string on attributes svgText, resulting an array of Promises.
+    const fetchedLinksPromise = this.links.map(async l => {
       const svgResp = await fetch(l.svg);
       const svgText = await svgResp.text();
       l.svgText = svgText
       return l;
     });
+    
+    // Then wait for all the links to be resolved.
     const fetchedLinks = await Promise.all(fetchedLinksPromise)
+
+    // Construct the content from svgText and url links, set it as InnerContent
     const content =  fetchedLinks.map(l => (
       `<a href="${l.url}">${l.svgText}</a>`
     )).join("\n");
